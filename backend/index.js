@@ -111,45 +111,123 @@ app.get("/product", async (req, res) => {
 /*****payment getWay */
 // console.log(process.env.STRIPE_SECRET_KEY);
 
+/***** Payment Gateway *****/
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 app.post("/create-checkout-session", async (req, res) => {
   try {
+    const { items } = req.body;
+    
+    if (!items || items.length === 0) {
+      return res.status(400).json({ error: "No items in cart" });
+    }
+
+    // Validate each item
+    const validItems = items.map(item => ({
+      name: item.name,
+      price: parseInt(item.price) * 100, // Convert to paisa
+      quantity: parseInt(item.qty),
+      image: item.image
+    }));
+
+    const lineItems = validItems.map(item => ({
+      price_data: {
+        currency: "inr",
+        product_data: {
+          name: item.name,
+          images: item.image ? [item.image] : [],
+          description: `Category: ${items.find(i => i.name === item.name)?.category || 'General'}`,
+        },
+        unit_amount: item.price,
+      },
+      adjustable_quantity: {
+        enabled: true,
+        minimum: 1,
+      },
+      quantity: item.quantity,
+    }));
+
     const params = {
       submit_type: "pay",
       mode: "payment",
       payment_method_types: ["card"],
       billing_address_collection: "auto",
-      shipping_options: [{ shipping_rate: "shr_1NBY3pSIdZYVEHlOjpjx9hLn" }],
-
-      line_items: req.body.map((item) => {
-        return {
-          price_data: {
-            currency: "inr",
-            product_data: {
-              name: item.name,
-              // images : [item.image]
+      shipping_options: [
+        { 
+          shipping_rate_data: {
+            type: "fixed_amount",
+            fixed_amount: {
+              amount: 0,
+              currency: "inr",
             },
-            unit_amount: item.price * 100,
+            display_name: "Free shipping",
+            delivery_estimate: {
+              minimum: {
+                unit: "business_day",
+                value: 5,
+              },
+              maximum: {
+                unit: "business_day",
+                value: 7,
+              },
+            },
           },
-          adjustable_quantity: {
-            enabled: true,
-            minimum: 1,
-          },
+        },
+      ],
+      line_items: lineItems,
+      success_url: `${process.env.FRONTEND_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.FRONTEND_URL}/cart`,
+      metadata: {
+        userId: req.body.userId || "guest",
+        items: JSON.stringify(items.map(item => ({
+          id: item._id,
+          name: item.name,
           quantity: item.qty,
-        };
-      }),
-      success_url: `${process.env.FRONTEND_URL}/success`,
-      cancel_url: `${process.env.FRONTEND_URL}/cancel`,
+          price: item.price
+        })))
+      },
     };
 
     const session = await stripe.checkout.sessions.create(params);
-    // console.log(session)
-    res.status(200).json(session.id);
+    
+    res.status(200).json({ 
+      id: session.id,
+      url: session.url 
+    });
+    
   } catch (err) {
-    res.status(err.statusCode || 500).json(err.message);
+    console.error("Stripe error:", err);
+    res.status(500).json({ 
+      error: err.message || "Internal server error" 
+    });
   }
 });
 
+// Webhook endpoint for payment confirmation (optional)
+app.post("/webhook", express.raw({type: 'application/json'}), async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+  } catch (err) {
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  // Handle the event
+  switch (event.type) {
+    case 'checkout.session.completed':
+      const session = event.data.object;
+      // Save order to database
+      console.log('Payment successful:', session.id);
+      break;
+    default:
+      console.log(`Unhandled event type ${event.type}`);
+  }
+
+  res.json({received: true});
+});
 app.listen(PORT, () => console.log("Server is running at port: " + PORT));
 // om12345
