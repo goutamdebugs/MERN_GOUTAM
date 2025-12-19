@@ -18,7 +18,7 @@ const AboutPage = () => {
                 About <span className="text-orange-600">GOUTAM</span> Foods
               </h1>
               <p className="text-2xl text-gray-700 mb-8 font-medium">
-                The Fastest Delivery to Your Home
+                Simple ordering. Fast delivery. Enjoy your favorite meals without leaving home.
               </p>
               <p className="text-lg text-gray-600 mb-10 max-w-2xl">
                 Founded in Barasat with PIN 700124, we're revolutionizing campus food delivery 

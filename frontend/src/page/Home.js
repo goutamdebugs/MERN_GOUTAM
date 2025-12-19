@@ -29,15 +29,15 @@ const Home = () => {
       <div className="md:flex gap-4 py-2">
         <div className="md:w-1/2">
           <div className="flex gap-3 bg-slate-300 w-36 px-2 items-center rounded-full">
-            <p className="text-sm font-medium text-slate-900">Bike Delivery</p>
+            <p className="text-sm font-medium text-slate-900">Hi buddys❤</p>
             <img
               src="https://cdn-icons-png.flaticon.com/512/2972/2972185.png"
               className="h-7"
             />
           </div>
-          <h2 className="text-4xl md:text-7xl font-bold py-3">
-            The Fasted Delivery in{" "}
-            <span className="text-red-600 text-">Your Home</span>
+          <h2 className="text-2xl md:text-7xl font-bold py-3">
+            Click. Eat. Delight.
+            {/* <span className="text-red-600 text-">Your Home</span> */}
           </h2>
           <p className="py-3 text-base ">
            Enjoy a seamless ordering experience on our user-friendly platform. With intuitive navigation, detailed menus, and secure checkout, we make getting your favorite campus food quick, easy, and hassle-free
