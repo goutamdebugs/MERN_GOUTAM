@@ -40,10 +40,7 @@ const Home = () => {
             <span className="text-red-600 text-">Your Home</span>
           </h2>
           <p className="py-3 text-base ">
-            Seamless Online Experience: Our user-friendly platform is designed
-            to enhance your shopping experience. With easy navigation, detailed
-            product descriptions, and secure payment options, we aim to make
-            your ordering process hassle-free and enjoyable.
+           Enjoy a seamless ordering experience on our user-friendly platform. With intuitive navigation, detailed menus, and secure checkout, we make getting your favorite campus food quick, easy, and hassle-free
           </p>
           <button className="font-bold bg-red-500 text-slate-200 px-4 py-2 rounded-md">
             Order Now
